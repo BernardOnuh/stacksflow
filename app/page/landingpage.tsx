@@ -14,6 +14,32 @@ const styles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
+    --background: #0A0805;
+    --foreground: #F0E8D8;
+    --font-sans: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #0A0805;
+      --foreground: #F0E8D8;
+    }
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :root {
     --gold: #C9A84C;
     --gold-light: #E8C96B;
     --gold-dim: #8A6B2A;
@@ -27,8 +53,13 @@ const styles = `
     --orange: #E8622A;
   }
 
+  html, body {
+    background: #0A0805 !important;
+    color: #F0E8D8;
+  }
+
   .sf-root {
-    background: var(--bg);
+    background: #0A0805;
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
     font-weight: 300;
