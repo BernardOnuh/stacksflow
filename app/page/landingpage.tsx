@@ -1,727 +1,1310 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
-  ArrowRight,
-  Zap,
-  Shield,
-  Code,
-  Menu,
-  X,
-  Rocket,
-  TrendingUp,
-  Users,
-  Globe,
-  CheckCircle,
-  Play,
-  Sparkles,
-  Bot,
-  Cpu,
-  Brain,
+  ArrowRight, Zap, Shield, Code, Menu, X, Rocket, TrendingUp,
+  Users, Globe, CheckCircle, Play, Sparkles, Bot, Cpu, Brain,
 } from 'lucide-react';
 
-// Constants
 const DOCS_URL = 'https://web3nova-bb969d43.mintlify.app/api-reference';
-const NAVIGATION_LINKS = {
-  docs: DOCS_URL,
-  pricing: DOCS_URL,
-  support: DOCS_URL,
-};
 
-// Logo Component
-interface LogoProps {
-  className?: string;
-}
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&display=swap');
 
-const USDCLogo = ({ className = 'w-8 h-8' }: LogoProps) => (
-  <svg
-    className={className}
-    viewBox="0 0 2000 2000"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-  
-  </svg>
-);
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-// Navigation Component
-interface NavigationProps {
-  mobileMenuOpen: boolean;
-  setMobileMenuOpen: (open: boolean) => void;
-}
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C96B;
+    --gold-dim: #8A6B2A;
+    --bg: #0A0805;
+    --surface: #110E08;
+    --surface2: #1A1610;
+    --border: rgba(201,168,76,0.15);
+    --border-bright: rgba(201,168,76,0.4);
+    --text: #F0E8D8;
+    --muted: #7A6E5E;
+    --orange: #E8622A;
+  }
 
-const Navigation = ({ mobileMenuOpen, setMobileMenuOpen }: NavigationProps) => (
-  <>
-    <nav className="bg-white/80 backdrop-blur-xl border-b border-orange-200/40 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 md:h-20">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <USDCLogo className="w-8 h-8 md:w-10 md:h-10" />
-            <div className="text-xl md:text-2xl font-bold bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 bg-clip-text text-transparent">
-              StacksFlow
+  .sf-root {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE OVERLAY */
+  .sf-root::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.35;
+  }
+
+  /* NAV */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 0 2rem;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, rgba(10,8,5,0.95) 0%, rgba(10,8,5,0.7) 100%);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s ease;
+  }
+
+  .nav.scrolled {
+    background: rgba(10,8,5,0.98);
+    border-bottom-color: var(--border-bright);
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--gold-light);
+  }
+
+  .logo-mark {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--orange) 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0A0805;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+  }
+
+  .nav-link {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-link:hover { color: var(--gold-light); }
+
+  .nav-cta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    color: var(--gold-light);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .nav-cta:hover {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #0A0805;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 8rem 2rem 4rem;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: 20%;
+    right: -10%;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(ellipse, rgba(232,98,42,0.08) 0%, transparent 60%);
+    border-radius: 50%;
+  }
+
+  .hero-glow-2 {
+    position: absolute;
+    bottom: -20%;
+    left: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 60%);
+    border-radius: 50%;
+  }
+
+  .hero-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: rgba(201,168,76,0.05);
+  }
+
+  .hero-eyebrow-dot {
+    width: 5px; height: 5px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .hero-h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 5vw, 5rem);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--orange) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+    max-width: 480px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--orange) 100%);
+    color: #0A0805;
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(232,98,42,0.35);
+    filter: brightness(1.1);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    background: transparent;
+    color: var(--text);
+    font-weight: 400;
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
+    border-radius: 4px;
+    text-decoration: none;
+    border: 1px solid rgba(240,232,216,0.15);
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .btn-secondary:hover {
+    border-color: rgba(240,232,216,0.4);
+    color: var(--text);
+    background: rgba(240,232,216,0.05);
+  }
+
+  .hero-trust {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .trust-item svg {
+    color: #4CAF50;
+    flex-shrink: 0;
+  }
+
+  /* HERO VISUAL */
+  .hero-visual {
+    position: relative;
+  }
+
+  .orb-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .orb-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin-slow linear infinite;
+  }
+
+  .orb-ring:nth-child(1) {
+    width: 90%; height: 90%;
+    border-color: rgba(201,168,76,0.12);
+    animation-duration: 30s;
+  }
+
+  .orb-ring:nth-child(2) {
+    width: 70%; height: 70%;
+    border-color: rgba(201,168,76,0.18);
+    animation-duration: 20s;
+    animation-direction: reverse;
+    border-style: dashed;
+  }
+
+  .orb-ring:nth-child(3) {
+    width: 50%; height: 50%;
+    border-color: rgba(232,98,42,0.2);
+    animation-duration: 15s;
+  }
+
+  @keyframes spin-slow {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  .orb-core {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%;
+    height: 30%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--orange) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 800;
+    color: #0A0805;
+    box-shadow:
+      0 0 60px rgba(201,168,76,0.3),
+      0 0 120px rgba(232,98,42,0.15);
+    animation: core-pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes core-pulse {
+    0%, 100% { box-shadow: 0 0 60px rgba(201,168,76,0.3), 0 0 120px rgba(232,98,42,0.15); }
+    50% { box-shadow: 0 0 80px rgba(201,168,76,0.5), 0 0 160px rgba(232,98,42,0.25); }
+  }
+
+  .orb-dot {
+    position: absolute;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  .stat-float {
+    position: absolute;
+    background: rgba(17,14,8,0.95);
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    backdrop-filter: blur(20px);
+  }
+
+  .stat-float-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.2rem;
+  }
+
+  .stat-float-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gold-light);
+  }
+
+  .stat-float:nth-child(6) {
+    top: 10%; right: 0;
+    animation: float-1 6s ease-in-out infinite;
+  }
+
+  .stat-float:nth-child(7) {
+    bottom: 15%; left: 0;
+    animation: float-2 6s ease-in-out infinite 1s;
+  }
+
+  @keyframes float-1 {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  @keyframes float-2 {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
+  /* DIVIDER */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    padding: 4rem 2rem;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stats-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+
+  .stat-item {
+    text-align: center;
+    position: relative;
+  }
+
+  .stat-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 10%; bottom: 10%;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--orange) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* SECTIONS */
+  .section {
+    padding: 6rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  .section-h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+
+  .section-h2 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--orange) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-sub {
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 560px;
+    margin-bottom: 3rem;
+  }
+
+  /* AI SECTION - full bleed */
+  .ai-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 6rem 2rem;
+  }
+
+  .ai-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .ai-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: end;
+    margin-bottom: 4rem;
+  }
+
+  .ai-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .ai-card {
+    background: var(--surface2);
+    padding: 2.5rem;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .ai-card:hover { background: rgba(201,168,76,0.04); }
+
+  .ai-card-icon {
+    width: 48px; height: 48px;
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    color: var(--gold);
+  }
+
+  .ai-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+  }
+
+  .ai-card p {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+  }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .feature-card {
+    padding: 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,76,0.04), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .feature-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-2px);
+  }
+
+  .feature-card:hover::before { opacity: 1; }
+
+  .feature-icon {
+    width: 44px; height: 44px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+  }
+
+  .feature-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+  }
+
+  .feature-card p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+
+  .feature-list {
+    list-style: none;
+  }
+
+  .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: rgba(240,232,216,0.5);
+    margin-bottom: 0.4rem;
+    line-height: 1.4;
+  }
+
+  .feature-list li svg { color: #4CAF50; flex-shrink: 0; margin-top: 1px; }
+
+  /* CODE SECTION */
+  .code-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 6rem 2rem;
+  }
+
+  .code-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .code-block {
+    background: #0D0B07;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(201,168,76,0.04);
+  }
+
+  .code-dots {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .code-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  .code-filename {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .code-body {
+    padding: 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: #8FA3B1;
+    overflow-x: auto;
+  }
+
+  .code-import { color: #C792EA; }
+  .code-from { color: #C792EA; }
+  .code-string { color: #C3E88D; }
+  .code-key { color: #82AAFF; }
+  .code-method { color: #82AAFF; }
+  .code-const { color: #C792EA; }
+  .code-comment { color: #546E7A; font-style: italic; }
+
+  /* USE CASES */
+  .use-cases-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .use-case-card {
+    padding: 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    transition: all 0.3s;
+  }
+
+  .use-case-card:hover {
+    border-color: var(--border-bright);
+    background: rgba(201,168,76,0.03);
+  }
+
+  .use-case-icon {
+    width: 48px; height: 48px;
+    flex-shrink: 0;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+  }
+
+  .use-case-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .use-case-card p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* CTA */
+  .cta-section {
+    padding: 8rem 2rem;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .cta-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .cta-h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+  }
+
+  .cta-h2 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--orange) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .cta-sub {
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* FOOTER */
+  .footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 4rem 2rem 2rem;
+  }
+
+  .footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+  }
+
+  .footer-brand p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 1rem;
+    max-width: 240px;
+  }
+
+  .footer-col h4 {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+  }
+
+  .footer-col ul {
+    list-style: none;
+  }
+
+  .footer-col li {
+    margin-bottom: 0.6rem;
+  }
+
+  .footer-col a {
+    font-size: 0.82rem;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-col a:hover { color: var(--gold-light); }
+
+  .footer-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-bottom span {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .status-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .status-dot::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: #4CAF50;
+    border-radius: 50%;
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* MOBILE */
+  .mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    padding: 0.25rem;
+  }
+
+  .mobile-menu {
+    display: none;
+  }
+
+  @media (max-width: 1024px) {
+    .nav-links { display: none; }
+    .mobile-toggle { display: flex; }
+    .hero-inner { grid-template-columns: 1fr; gap: 3rem; }
+    .hero-visual { display: none; }
+    .stats-inner { grid-template-columns: repeat(2, 1fr); }
+    .stat-item:nth-child(2)::after, .stat-item:nth-child(4)::after { display: none; }
+    .ai-header { grid-template-columns: 1fr; gap: 2rem; }
+    .ai-cards { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .code-inner { grid-template-columns: 1fr; gap: 3rem; }
+    .use-cases-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    .stats-inner { grid-template-columns: repeat(2, 1fr); }
+    .hero-h1 { font-size: 2.5rem; }
+    .hero { padding: 6rem 1.25rem 3rem; }
+    .section { padding: 4rem 1.25rem; }
+    .ai-section, .code-section { padding: 4rem 1.25rem; }
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+
+  /* MOBILE MENU OPEN */
+  .mobile-menu.open {
+    display: block;
+    position: fixed;
+    inset: 72px 0 0 0;
+    background: rgba(10,8,5,0.98);
+    z-index: 99;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .mobile-menu a {
+    display: block;
+    padding: 1rem 0;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.2s;
+  }
+
+  .mobile-menu a:hover { color: var(--gold-light); }
+`;
+
+export default function StacksLanding() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <div className="sf-root">
+      <style>{styles}</style>
+
+      {/* NAV */}
+      <nav className={`nav ${scrolled ? 'scrolled' : ''}`}>
+        <div className="nav-logo">
+          <div className="logo-mark">S</div>
+          StacksFlow
+        </div>
+        <div className="nav-links">
+          <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="nav-link">Docs</a>
+          <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="nav-link">Pricing</a>
+          <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="nav-link">Support</a>
+          <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="nav-cta">
+            Get API Key <ArrowRight size={12} />
+          </a>
+        </div>
+        <button className="mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)}>
+          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      </nav>
+
+      <div className={`mobile-menu ${mobileOpen ? 'open' : ''}`}>
+        <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">Docs</a>
+        <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">Pricing</a>
+        <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">Support</a>
+        <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">Get API Key →</a>
+      </div>
+
+      {/* HERO */}
+      <section className="hero">
+        <div className="hero-bg">
+          <div className="hero-grid" />
+          <div className="hero-glow" />
+          <div className="hero-glow-2" />
+        </div>
+        <div className="hero-inner">
+          <div>
+            <div className="hero-eyebrow">
+              <div className="hero-eyebrow-dot" />
+              AI-Powered Settlement
+            </div>
+            <h1 className="hero-h1">
+              Your bridge to the<br />
+              <em>Bitcoin economy</em>
+            </h1>
+            <p className="hero-sub">
+              Bring Circle-backed USDC to Stacks in one API call. AI agents handle routing, verification, and settlement. Zero complexity.
+            </p>
+            <div className="hero-actions">
+              <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="btn-primary">
+                Start Building <ArrowRight size={16} />
+              </a>
+              <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="btn-secondary">
+                <Play size={14} /> View Docs
+              </a>
+            </div>
+            <div className="hero-trust">
+              <div className="trust-item"><CheckCircle size={14} /> No credit card required</div>
+              <div className="trust-item"><CheckCircle size={14} /> 5-minute setup</div>
             </div>
           </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center space-x-8">
-            <a
-              href={NAVIGATION_LINKS.docs}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-700 hover:text-orange-600 font-medium transition-colors"
-            >
-              Docs
-            </a>
-            <a
-              href={NAVIGATION_LINKS.pricing}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-700 hover:text-orange-600 font-medium transition-colors"
-            >
-              Pricing
-            </a>
-            <a
-              href={NAVIGATION_LINKS.support}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-700 hover:text-orange-600 font-medium transition-colors"
-            >
-              Support
-            </a>
-            <a
-              href={DOCS_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:via-orange-700 hover:to-amber-700 text-white px-6 py-2.5 rounded-full font-semibold flex items-center space-x-2 shadow-lg shadow-orange-500/30 transition-all hover:shadow-xl"
-            >
-              <span>Get API Key</span>
-              <ArrowRight className="w-4 h-4" />
-            </a>
+          <div className="hero-visual">
+            <div className="orb-container">
+              <div className="orb-ring" />
+              <div className="orb-ring" />
+              <div className="orb-ring" />
+              <div className="orb-core">₿</div>
+              <div className="stat-float">
+                <div className="stat-float-label">Live Settlements</div>
+                <div className="stat-float-value">$2.4M</div>
+              </div>
+              <div className="stat-float">
+                <div className="stat-float-label">Active Builders</div>
+                <div className="stat-float-value">1,200+</div>
+              </div>
+            </div>
           </div>
+        </div>
+      </section>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden p-2 hover:bg-orange-100 rounded-lg transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+      {/* STATS */}
+      <div className="stats-bar">
+        <div className="stats-inner">
+          {[
+            { value: '1,200+', label: 'Active Builders' },
+            { value: '$2.4M', label: 'Daily Volume' },
+            { value: '99.9%', label: 'Uptime' },
+            { value: '3.2s', label: 'Avg Settlement' },
+          ].map(s => (
+            <div key={s.label} className="stat-item">
+              <span className="stat-value">{s.value}</span>
+              <span className="stat-label">{s.label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-t border-orange-200 py-4">
-          <div className="px-4 space-y-4">
-            <a
-              href={NAVIGATION_LINKS.docs}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block font-semibold text-gray-900 hover:text-orange-600"
-            >
-              Docs
-            </a>
-            <a
-              href={NAVIGATION_LINKS.pricing}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block font-semibold text-gray-900 hover:text-orange-600"
-            >
-              Pricing
-            </a>
-            <a
-              href={NAVIGATION_LINKS.support}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block font-semibold text-gray-900 hover:text-orange-600"
-            >
-              Support
-            </a>
-            <a
-              href={DOCS_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-full font-semibold shadow-lg block text-center"
-            >
-              Get API Key
-            </a>
+      {/* AI SECTION */}
+      <div className="ai-section">
+        <div className="ai-inner">
+          <div className="ai-header">
+            <div>
+              <div className="section-tag"><Brain size={12} /> Intelligent Automation</div>
+              <h2 className="section-h2">AI agents solve<br /><em>the complexity</em></h2>
+            </div>
+            <div>
+              <p className="section-sub">Smart routing, auto verification, and error recovery — running 24/7 for 99.9% settlement success.</p>
+              <div className="ai-badge"><Bot size={14} /> Trained on 10M+ cross-chain settlements</div>
+            </div>
           </div>
-        </div>
-      )}
-    </nav>
-  </>
-);
-
-// Hero Section Component
-const HeroSection = () => (
-  <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
-    <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
-      {/* Hero Content */}
-      <div className="order-2 lg:order-1">
-        <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold mb-6 border border-orange-200/50">
-          <Bot className="w-4 h-4" />
-          <span>AI-POWERED SETTLEMENT • </span>
-        </div>
-
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-          Your bridge to the{' '}
-          <span className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 bg-clip-text text-transparent">
-            Bitcoin economy
-          </span>
-        </h1>
-
-        <p className="text-lg sm:text-xl text-gray-600 mb-8 leading-relaxed">
-          Bring Circle-backed USDC to Stacks in one API call. AI agents handle routing, verification, and settlement. Zero complexity. Production-ready in minutes.
-        </p>
-
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <a
-            href={DOCS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:via-orange-700 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-semibold text-base sm:text-lg flex items-center justify-center space-x-2 shadow-xl shadow-orange-500/30 transform hover:scale-105 transition-all"
-          >
-            <span>Start Building</span>
-            <ArrowRight className="w-5 h-5" />
-          </a>
-          <a
-            href={DOCS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="border-2 border-gray-300 hover:border-orange-500 hover:bg-orange-50 text-gray-700 hover:text-orange-600 px-8 py-4 rounded-xl font-semibold text-base sm:text-lg flex items-center justify-center space-x-2 transition-all"
-          >
-            <Play className="w-5 h-5" />
-            <span>View Docs</span>
-          </a>
-        </div>
-
-        {/* Trust Badges */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 text-sm text-gray-600">
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-            <span>No credit card required</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-            <span>5-minute setup</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Hero Visual */}
-      <div className="relative order-1 lg:order-2">
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500 rounded-3xl blur-3xl opacity-20 animate-pulse"></div>
-        <div className="relative bg-gradient-to-br from-orange-400 via-orange-500 to-amber-600 rounded-3xl p-8 sm:p-12 shadow-2xl overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute border-2 border-white rounded-full"
-                style={{
-                  width: `${(i + 1) * 80}px`,
-                  height: `${(i + 1) * 80}px`,
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  opacity: 0.1 - i * 0.01,
-                }}
-              ></div>
+          <div className="ai-cards">
+            {[
+              { Icon: Cpu, title: 'Smart Routing', desc: 'Real-time network analysis selects optimal paths. Lowest fees, fastest execution, guaranteed.' },
+              { Icon: Shield, title: 'Auto Verification', desc: "Every transaction verified against Circle's xReserve. 1:1 backing guaranteed before settlement." },
+              { Icon: Zap, title: 'Error Recovery', desc: 'Automatic retry with adjusted parameters. 99.9% success rate without manual intervention.' },
+            ].map(({ Icon, title, desc }) => (
+              <div key={title} className="ai-card">
+                <div className="ai-card-icon"><Icon size={20} /></div>
+                <h3>{title}</h3>
+                <p>{desc}</p>
+              </div>
             ))}
           </div>
-          <div className="relative z-10 flex items-center justify-center">
-            <div className="animate-bounce">
-              <div className="bg-white/20 backdrop-blur-sm rounded-full p-6 sm:p-8">
-                <div className="bg-white rounded-full p-6 sm:p-8 shadow-2xl">
-                  <div className="text-orange-500 text-6xl sm:text-7xl font-bold">₿</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="absolute top-4 sm:top-8 right-4 sm:right-8 bg-white/95 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2 shadow-lg">
-            <div className="text-xs text-gray-600 mb-1">Live Settlements</div>
-            <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-              $2.4M
-            </div>
-          </div>
-          <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-8 bg-white/95 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2 shadow-lg">
-            <div className="text-xs text-gray-600 mb-1">Builders</div>
-            <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-              1,200+
-            </div>
-          </div>
         </div>
       </div>
-    </div>
-  </section>
-);
 
-// Feature Card Component
-interface FeatureCardProps {
-  icon: React.ComponentType<{ className: string }>;
-  title: string;
-  description: string;
-}
-
-const FeatureCard = ({ icon: Icon, title, description }: FeatureCardProps) => (
-  <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 sm:p-8 hover:bg-white/15 transition-all hover:border-white/40">
-    <div className="bg-white/20 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-6">
-      <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-    </div>
-    <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">{title}</h3>
-    <p className="text-orange-100 text-sm sm:text-base">{description}</p>
-  </div>
-);
-
-// AI Agent Section Component
-const AIAgentSection = () => (
-  <section className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 py-16 sm:py-20">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-12 sm:mb-16">
-        <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs sm:text-sm font-semibold mb-6">
-          <Brain className="w-4 h-4" />
-          <span>INTELLIGENT AUTOMATION</span>
-        </div>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
-          AI Agents Solve the Complexity
-        </h2>
-        <p className="text-lg sm:text-xl text-orange-100 max-w-3xl mx-auto">
-          Smart routing, auto verification, and error recovery. Our AI agents run 24/7, ensuring 99.9% settlement success.
-        </p>
-      </div>
-
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-        <FeatureCard
-          icon={Cpu}
-          title="Smart Routing"
-          description="Real-time network analysis selects optimal paths. Lowest fees, fastest execution, guaranteed."
-        />
-        <FeatureCard
-          icon={Shield}
-          title="Auto Verification"
-          description="Every transaction verified against Circle's xReserve. 1:1 backing guaranteed before settlement."
-        />
-        <FeatureCard
-          icon={Zap}
-          title="Error Recovery"
-          description="Automatic retry with adjusted parameters. 99.9% success rate without manual intervention."
-        />
-      </div>
-
-      <div className="mt-12 text-center">
-        <div className="inline-flex items-center space-x-3 bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-full">
-          <Bot className="w-5 h-5" />
-          <span className="font-semibold">Trained on 10M+ cross-chain settlements</span>
-        </div>
-      </div>
-    </div>
-  </section>
-);
-
-// Stats Section Component
-const StatsSection = () => {
-  const stats = [
-    { label: 'Active Builders', value: '1,200+' },
-    { label: 'Daily Volume', value: '$2.4M' },
-    { label: 'Uptime', value: '99.9%' },
-    { label: 'Avg Settlement', value: '3.2s' },
-  ];
-
-  return (
-    <section className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-16 sm:py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {stats.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500 bg-clip-text text-transparent mb-2">
-                {stat.value}
-              </div>
-              <div className="text-gray-400 text-sm sm:text-base">{stat.label}</div>
+      {/* FEATURES */}
+      <section className="section">
+        <div className="section-tag"><Sparkles size={12} /> Built for Builders</div>
+        <h2 className="section-h2">Everything you need.<br /><em>One API.</em></h2>
+        <p className="section-sub">Production-ready infrastructure so you can focus on shipping, not plumbing.</p>
+        <div className="features-grid">
+          {[
+            { Icon: Zap, title: 'AI Settlement Agents', desc: 'Intelligent routing and gas optimization, fully automated.', features: ['Auto-retry failed transactions', 'Gas optimization', 'Real-time status tracking'] },
+            { Icon: Shield, title: 'Circle xReserve Trust', desc: 'Real USDC backed by Circle with cryptographic attestations.', features: ['Proof of reserves on-chain', 'No exploits possible', 'Direct Circle integration'] },
+            { Icon: Code, title: 'Developer-First API', desc: 'Clean API with full TypeScript support and webhooks.', features: ['TypeScript SDK', 'Webhook notifications', '5-minute integration'] },
+          ].map(({ Icon, title, desc, features }) => (
+            <div key={title} className="feature-card">
+              <div className="feature-icon"><Icon size={20} /></div>
+              <h3>{title}</h3>
+              <p>{desc}</p>
+              <ul className="feature-list">
+                {features.map(f => (
+                  <li key={f}><CheckCircle size={13} /> {f}</li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
-      </div>
-    </section>
-  );
-};
+      </section>
 
-// Feature Item Component
-interface FeatureItemProps {
-  icon: React.ComponentType<{ className: string }>;
-  title: string;
-  description: string;
-  features: string[];
-}
-
-const FeatureItem = ({ icon: Icon, title, description, features }: FeatureItemProps) => (
-  <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-2xl transition-all border border-gray-100 transform hover:-translate-y-2">
-    <div className="bg-gradient-to-br from-orange-100 to-amber-50 w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center mb-6">
-      <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-orange-600" />
-    </div>
-    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">{title}</h3>
-    <p className="text-gray-600 text-sm sm:text-base mb-4">{description}</p>
-    <ul className="space-y-2">
-      {features.map((feature) => (
-        <li key={feature} className="flex items-start space-x-2 text-gray-600 text-sm sm:text-base">
-          <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-          <span>{feature}</span>
-        </li>
-      ))}
-    </ul>
-  </div>
-);
-
-// Features Section Component
-const FeaturesSection = () => {
-  const features = [
-    {
-      icon: Zap,
-      title: 'AI Settlement Agents',
-      description: 'Intelligent routing and gas optimization, fully automated.',
-      features: ['Auto-retry failed txs', 'Gas optimization', 'Real-time status'],
-    },
-    {
-      icon: Shield,
-      title: 'Circle xReserve Trust',
-      description: 'Real USDC backed by Circle with cryptographic attestations.',
-      features: ['Proof of reserves', 'No exploits possible', 'Direct integration'],
-    },
-    {
-      icon: Code,
-      title: 'Developer-First API',
-      description: 'Clean API with full TypeScript support and webhooks.',
-      features: ['TypeScript SDK', 'Webhooks', '5-min integration'],
-    },
-  ];
-
-  return (
-    <section className="py-16 sm:py-20 md:py-32 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Built for builders
-          </h2>
-          <p className="text-lg sm:text-xl text-gray-600">Everything you need in one API</p>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {features.map((feature) => (
-            <FeatureItem
-              key={feature.title}
-              icon={feature.icon}
-              title={feature.title}
-              description={feature.description}
-              features={feature.features}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// Code Section Component
-const CodeSection = () => (
-  <section className="py-16 sm:py-20 md:py-32 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-8 sm:mb-12">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">Ship faster</h2>
-        <p className="text-lg sm:text-xl text-gray-400">From Ethereum to Stacks in 10 lines</p>
-      </div>
-
-      <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-4 sm:p-8 overflow-x-auto shadow-2xl border border-gray-700 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+      {/* CODE */}
+      <div className="code-section">
+        <div className="code-inner">
+          <div>
+            <div className="section-tag"><Code size={12} /> Developer Experience</div>
+            <h2 className="section-h2">Ship in<br /><em>10 lines.</em></h2>
+            <p className="section-sub">From Ethereum to Stacks in minutes. Clean SDK, clear docs, real results.</p>
+            <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="btn-primary">
+              View Documentation <ArrowRight size={16} />
+            </a>
           </div>
-          <div className="text-gray-500 text-xs sm:text-sm">settlement.ts</div>
-        </div>
-        <pre className="text-green-400 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto">{`import { USDCxClient } from '@stacks/usdcx';
+          <div className="code-block">
+            <div className="code-header">
+              <div className="code-dots">
+                <div className="code-dot" style={{background:'#FF5F57'}} />
+                <div className="code-dot" style={{background:'#FEBC2E'}} />
+                <div className="code-dot" style={{background:'#28C840'}} />
+              </div>
+              <div className="code-filename">settlement.ts</div>
+            </div>
+            <pre className="code-body">{`<span class="code-import">import</span> { USDCxClient } <span class="code-from">from</span> <span class="code-string">'@stacks/usdcx'</span>;
 
-const client = new USDCxClient({
-  apiKey: process.env.USDCX_API_KEY
+<span class="code-const">const</span> client = <span class="code-method">new</span> <span class="code-method">USDCxClient</span>({
+  <span class="code-key">apiKey</span>: process.env.<span class="code-string">USDCX_API_KEY</span>
 });
 
-const settlement = await client.bridge({
-  amount: '1000.00',
-  fromChain: 'ethereum',
-  toChain: 'stacks',
-  autoSettle: true
+<span class="code-const">const</span> settlement = <span class="code-key">await</span> client.<span class="code-method">bridge</span>({
+  <span class="code-key">amount</span>: <span class="code-string">'1000.00'</span>,
+  <span class="code-key">fromChain</span>: <span class="code-string">'ethereum'</span>,
+  <span class="code-key">toChain</span>: <span class="code-string">'stacks'</span>,
+  <span class="code-key">autoSettle</span>: <span class="code-key">true</span>
 });
 
-console.log('Settled:', settlement.txId);`}</pre>
-      </div>
-
-      <div className="text-center">
-        <a
-          href={DOCS_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:via-orange-700 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-semibold text-base sm:text-lg shadow-xl shadow-orange-500/30 transition-all hover:shadow-2xl inline-block"
-        >
-          View Documentation
-        </a>
-      </div>
-    </div>
-  </section>
-);
-
-// Use Case Card Component
-interface UseCaseCardProps {
-  icon: React.ComponentType<{ className: string }>;
-  title: string;
-  description: string;
-}
-
-const UseCaseCard = ({ icon: Icon, title, description }: UseCaseCardProps) => (
-  <div className="bg-gradient-to-br from-orange-50 to-white rounded-2xl p-6 sm:p-8 border border-orange-200 hover:border-orange-300 hover:shadow-xl transition-all">
-    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
-      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
-    </div>
-    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">{title}</h3>
-    <p className="text-gray-600 text-sm sm:text-base">{description}</p>
-  </div>
-);
-
-// Use Cases Section Component
-const UseCasesSection = () => {
-  const useCases = [
-    {
-      icon: TrendingUp,
-      title: 'DeFi Protocols',
-      description: 'Bring Ethereum liquidity to Stacks. Enable lending, borrowing, and trading with real USDC.',
-    },
-    {
-      icon: Globe,
-      title: 'Payment Platforms',
-      description: 'Accept USDC payments, settle on Bitcoin. Perfect for cross-border transactions.',
-    },
-    {
-      icon: Rocket,
-      title: 'Web3 Apps',
-      description: 'Build with stable USDC. Gaming, social tipping, creator monetization.',
-    },
-    {
-      icon: Users,
-      title: 'Enterprise',
-      description: 'Treasury management and B2B settlements with enterprise compliance.',
-    },
-  ];
-
-  return (
-    <section className="py-16 sm:py-20 md:py-32 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Built for every use case
-          </h2>
-          <p className="text-lg sm:text-xl text-gray-600">From DeFi to payments</p>
-        </div>
-
-        <div className="grid sm:grid-cols-2 gap-6 sm:gap-8">
-          {useCases.map((useCase) => (
-            <UseCaseCard
-              key={useCase.title}
-              icon={useCase.icon}
-              title={useCase.title}
-              description={useCase.description}
-            />
-          ))}
+console.<span class="code-method">log</span>(<span class="code-string">'Settled:'</span>, settlement.txId);`}</pre>
+          </div>
         </div>
       </div>
-    </section>
-  );
-};
 
-// CTA Section Component
-const CTASection = () => (
-  <section className="py-16 sm:py-20 md:py-32 bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 relative overflow-hidden">
-    <div className="absolute inset-0 opacity-10">
-      <div className="absolute top-0 left-0 w-72 h-72 sm:w-96 sm:h-96 bg-white rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-0 w-72 h-72 sm:w-96 sm:h-96 bg-white rounded-full blur-3xl"></div>
-    </div>
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-      <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs sm:text-sm font-semibold mb-6 sm:mb-8">
-        <Sparkles className="w-4 h-4" />
-        <span>JOIN BUILDERS </span>
-      </div>
-      <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold text-white mb-4 sm:mb-6">
-        Start building now
-      </h2>
-      <p className="text-lg sm:text-xl text-orange-100 mb-8 sm:mb-12 leading-relaxed">
-        Bitcoin economy. Circle-backed USDC. One API. No credit card. No complexity. Just ship.
-      </p>
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <a
-          href={DOCS_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-white text-orange-600 px-8 sm:px-10 py-4 sm:py-5 rounded-xl font-bold text-base sm:text-lg hover:bg-gray-100 flex items-center justify-center space-x-2 shadow-2xl transform hover:scale-105 transition-all"
-        >
-          <span>Get API Key</span>
-          <ArrowRight className="w-5 h-5" />
-        </a>
-        <a
-          href={DOCS_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="border-2 border-white text-white px-8 sm:px-10 py-4 sm:py-5 rounded-xl font-bold text-base sm:text-lg hover:bg-white/10 backdrop-blur-sm flex items-center justify-center space-x-2 transition-all"
-        >
-          <span>Explore Docs</span>
-        </a>
-      </div>
-    </div>
-  </section>
-);
-
-// Footer Link Section Component
-interface FooterLink {
-  label: string;
-  href: string;
-  external?: boolean;
-}
-
-interface FooterSectionProps {
-  title: string;
-  links: FooterLink[];
-}
-
-const FooterSection = ({ title, links }: FooterSectionProps) => (
-  <div>
-    <h4 className="text-white font-semibold mb-4 text-sm">{title}</h4>
-    <ul className="space-y-3 text-xs sm:text-sm">
-      {links.map((link) => (
-        <li key={link.label}>
-          <a
-            href={link.href}
-            target={link.external ? '_blank' : undefined}
-            rel={link.external ? 'noopener noreferrer' : undefined}
-            className="text-gray-400 hover:text-orange-400 transition-colors"
-          >
-            {link.label}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </div>
-);
-
-// Footer Component
-const Footer = () => {
-  const footerSections = [
-    {
-      title: 'Product',
-      links: [
-        { label: 'API Reference', href: DOCS_URL, external: true },
-        { label: 'SDK', href: DOCS_URL, external: true },
-        { label: 'Pricing', href: DOCS_URL, external: true },
-        { label: 'Status', href: DOCS_URL, external: true },
-      ],
-    },
-    {
-      title: 'Resources',
-      links: [
-        { label: 'Docs', href: DOCS_URL, external: true },
-        { label: 'Guides', href: DOCS_URL, external: true },
-        { label: 'Examples', href: DOCS_URL, external: true },
-        { label: 'Support', href: DOCS_URL, external: true },
-      ],
-    },
-    {
-      title: 'Company',
-      links: [
-        { label: 'About', href: '#' },
-        { label: 'Blog', href: '#' },
-        { label: 'Contact', href: '#' },
-        { label: 'Privacy', href: '#' },
-      ],
-    },
-  ];
-
-  return (
-    <footer className="bg-gray-900 text-gray-400 py-12 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 mb-12">
-          {/* Brand Section */}
-          <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center space-x-2 mb-4">
-              <USDCLogo className="w-8 h-8" />
-              <div className="text-white text-lg font-bold bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent">
-                USDCx
+      {/* USE CASES */}
+      <section className="section">
+        <div className="section-tag"><Globe size={12} /> Use Cases</div>
+        <h2 className="section-h2">Built for every<br /><em>use case.</em></h2>
+        <p className="section-sub">From DeFi protocols to enterprise payments — StacksFlow powers them all.</p>
+        <div className="use-cases-grid">
+          {[
+            { Icon: TrendingUp, title: 'DeFi Protocols', desc: 'Bring Ethereum liquidity to Stacks. Enable lending, borrowing, and trading with real USDC.' },
+            { Icon: Globe, title: 'Payment Platforms', desc: 'Accept USDC payments, settle on Bitcoin. Perfect for cross-border transactions.' },
+            { Icon: Rocket, title: 'Web3 Apps', desc: 'Build with stable USDC. Gaming, social tipping, creator monetization.' },
+            { Icon: Users, title: 'Enterprise', desc: 'Treasury management and B2B settlements with enterprise compliance.' },
+          ].map(({ Icon, title, desc }) => (
+            <div key={title} className="use-case-card">
+              <div className="use-case-icon"><Icon size={20} /></div>
+              <div>
+                <h3>{title}</h3>
+                <p>{desc}</p>
               </div>
             </div>
-            <p className="text-xs sm:text-sm text-gray-500">
-              AI-powered USDC settlement for Bitcoin Layer 2.
-            </p>
-          </div>
-
-          {/* Footer Sections */}
-          {footerSections.map((section) => (
-            <FooterSection key={section.title} title={section.title} links={section.links} />
           ))}
         </div>
+      </section>
 
-        {/* Footer Bottom */}
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs sm:text-sm gap-4">
-          <div>© 2025 Stacks USDCx. All rights reserved.</div>
-          <div className="flex items-center space-x-4">
-            <span className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-gray-500">All systems operational</span>
-            </span>
+      {/* CTA */}
+      <section className="cta-section">
+        <div className="cta-glow" />
+        <div className="cta-inner">
+          <div className="section-tag" style={{justifyContent:'center', marginBottom:'1.5rem'}}><Sparkles size={12} /> Join the Builders</div>
+          <h2 className="cta-h2">Start building<br /><em>now.</em></h2>
+          <p className="cta-sub">Bitcoin economy. Circle-backed USDC. One API.<br />No credit card. No complexity. Just ship.</p>
+          <div className="cta-actions">
+            <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="btn-primary">
+              Get API Key <ArrowRight size={16} />
+            </a>
+            <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="btn-secondary">
+              Explore Docs
+            </a>
           </div>
         </div>
-      </div>
-    </footer>
-  );
-};
+      </section>
 
-// Global Styles
-const GlobalStyles = () => (
-  <style jsx global>{`
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      font-family: 'Space Grotesk', sans-serif;
-    }
-
-    code,
-    pre {
-      font-family: 'JetBrains Mono', monospace;
-    }
-  `}</style>
-);
-
-// Main App Component
-export default function StacksLanding() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-amber-50 overflow-hidden">
-      <GlobalStyles />
-      <Navigation mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
-      <HeroSection />
-      <AIAgentSection />
-      <StatsSection />
-      <FeaturesSection />
-      <CodeSection />
-      <UseCasesSection />
-      <CTASection />
-      <Footer />
+      {/* FOOTER */}
+      <footer className="footer">
+        <div className="footer-inner">
+          <div className="footer-grid">
+            <div className="footer-brand">
+              <div className="nav-logo">
+                <div className="logo-mark">S</div>
+                StacksFlow
+              </div>
+              <p>AI-powered USDC settlement for Bitcoin Layer 2. Zero complexity, production-ready.</p>
+            </div>
+            {[
+              { title: 'Product', links: ['API Reference', 'SDK', 'Pricing', 'Status'] },
+              { title: 'Resources', links: ['Docs', 'Guides', 'Examples', 'Support'] },
+              { title: 'Company', links: ['About', 'Blog', 'Contact', 'Privacy'] },
+            ].map(col => (
+              <div key={col.title} className="footer-col">
+                <h4>{col.title}</h4>
+                <ul>
+                  {col.links.map(link => (
+                    <li key={link}><a href={DOCS_URL} target="_blank" rel="noopener noreferrer">{link}</a></li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="footer-bottom">
+            <span>© 2025 Stacks USDCx. All rights reserved.</span>
+            <span className="status-dot">All systems operational</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
