@@ -2,9 +2,8 @@ name: StacksFlow Cycler
 
 on:
   schedule:
-    # Every 5 minutes
     - cron: '*/5 * * * *'
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   cycle:
@@ -15,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -25,19 +24,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
-      - name: Install @stacksflowr/my-sdk
+          
+      - name: Install SDK
         run: npm install @stacksflowr/my-sdk --save
-      
-      - name: Run cycler (one cycle only)
+        
+      - name: Run one cycle
         run: |
           chmod +x cycle-stacksflow-ci.sh
           ./cycle-stacksflow-ci.sh
-      
-      - name: Commit and push changes
+          
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git diff --quiet && git diff --staged --quiet || git commit -m "🤖 Cycle: update colors/stats + SDK"
+          git diff --quiet && git diff --staged --quiet || git commit -m "🤖 Auto-cycle: update colors/stats + SDK [skip ci]"
           git push
