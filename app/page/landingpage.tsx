@@ -40,17 +40,17 @@ const styles = `
   }
 
   :root {
-    --gold: #fe7207;
-    --gold-light: #f78902;
-    --gold-dim: #775816;
-    --bg: #0A0805;
-    --surface: #16120b;
-    --surface2: #110e0a;
+    --gold: #00FFB3;
+    --gold-light: #33FFCC;
+    --gold-dim: #006644;
+    --bg: #050808;
+    --surface: #050d0a;
+    --surface2: #081210;
     --border: rgba(201,168,76,0.15);
     --border-bright: rgba(201,168,76,0.4);
     --text: #F0E8D8;
-    --muted: #6b5f50;
-    --orange: #f66a2f;
+    --muted: #304a40;
+    --orange: #00CC88;
   }
 
   html, body {
@@ -1147,7 +1147,7 @@ export default function StacksLanding() {
               </div>
               <div className="stat-float">
                 <div className="stat-float-label">Active Builders</div>
-                <div className="stat-float-value">1,650+</div>
+                <div className="stat-float-value">5,000+</div>
               </div>
             </div>
           </div>
@@ -1159,9 +1159,9 @@ export default function StacksLanding() {
       <div className="stats-bar">
         <div className="stats-inner">
           {[
-            { value: '1,600+', label: 'Active Builders' },
-            { value: '.2M', label: 'Daily Volume' },
-            { value: '99.9%', label: 'Uptime' },
+            { value: '4,900+', label: 'Active Builders' },
+            { value: '.5M', label: 'Daily Volume' },
+            { value: '100%', label: 'Uptime' },
             { value: '3.2s', label: 'Avg Settlement' },
           ].map(s => (
             <div key={s.label} className="stat-item">
