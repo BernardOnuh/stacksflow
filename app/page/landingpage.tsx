@@ -40,17 +40,17 @@ const styles = `
   }
 
   :root {
-    --gold: #FF0080;
-    --gold-light: #FF33AA;
-    --gold-dim: #660033;
-    --bg: #080508;
-    --surface: #0d0508;
-    --surface2: #130810;
+    --gold: #FF5500;
+    --gold-light: #FF7733;
+    --gold-dim: #882200;
+    --bg: #080505;
+    --surface: #0d0805;
+    --surface2: #120d08;
     --border: rgba(201,168,76,0.15);
     --border-bright: rgba(201,168,76,0.4);
     --text: #F0E8D8;
-    --muted: #553050;
-    --orange: #CC0055;
+    --muted: #553830;
+    --orange: #CC3300;
   }
 
   html, body {
